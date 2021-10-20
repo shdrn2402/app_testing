@@ -1,0 +1,59 @@
+{% load static %}
+<header>
+    <nav class='navbar navbar-expand-md navbar-light' style='background-color: lightskyblue'>
+        <div class='container-fluid'>
+            <a class='navbar-brand' href= {% url 'posts:index' %}>
+                <img src='{% static 'img/logo1.png' %}' width='30' height='30' class='d-inline-block align-top' alt=''>
+                <span style='color:red'>Ya</span>tube
+            </a>
+            <button class='navbar-toggler' data-toggle='collapse' data-target='#expandme'>
+                <span class='navbar-toggler-icon'></span>
+            </button>
+            {% with request.resolver_match.view_name as view_name %}
+                <div class='collapse navbar-collapse' id='expandme'>
+                    <div class='container'>
+                        <ul class='nav nav-pills'>
+                            <li class='nav-item'> 
+                                <a class='nav-link {% if view_name  == "about:author" %}active{% endif %}' href='{% url "about:author" %}'>Об авторе</a>
+                            </li>
+                            <li class='nav-item'>
+                                <a class='nav-link {% if view_name  == "about:tech" %}active{% endif %}' href='{% url "about:tech" %}'>Технологии</a>
+                            </li>
+                            {% if user.is_authenticated %}
+                                <li class='nav-item'> 
+                                    <a class='nav-link {% if view_name  == "posts:post_create" %}active{% endif %}' href='{% url "posts:post_create" %}'>Новая запись</a>
+                                </li>
+                                <li class='nav-item'> 
+                                    <a class='nav-link {% if view_name  == "users:password_change_form" %}active{% endif %}' href='{% url "users:password_change_form" %}'>Изменить пароль</a>
+                                </li>
+                                <li class='nav-item'> 
+                                    <a class='nav-link ' href='{% url "users:logout" %}'>Выйти</a>
+                                </li>
+                            {% else %}
+                                <li class='nav-item'> 
+                                    <a class='nav-link {% if view_name  == "users:login" %}active{% endif %}' href='{% url "users:login" %}'>Войти</a>
+                                </li>
+                                <li class='nav-item'> 
+                                    <a class='nav-link {% if view_name  == "users:signup" %}active{% endif %}' href='{% url 'users:signup' %}'>Регистрация</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    {% comment%}Расположение имени пользователя в стороне от навигации мне кажется более симпатичным{% endcomment %}
+                    {% if user.is_authenticated %}
+                        {{ user.username }}                   
+                    {% endif %}       
+                </div>
+            {% endwith %}
+            <script src='https://code.jquery.com/jquery-3.5.1.slim.min.js'
+            integrity='sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj'
+            crossorigin='anonymous'></script>
+            <script src='https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js'
+            integrity='sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo'
+            crossorigin='anonymous'></script>
+            <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js'
+            integrity='sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI'
+            crossorigin='anonymous'></script>
+        </div>
+    </nav>  
+</header>    
