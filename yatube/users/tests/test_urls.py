@@ -24,7 +24,8 @@ class PostURLTests(TestCase):
             },
             '/auth/password_change/done/': {
                 'template': 'users/password_change_done.html',
-                'redirect_url': '/auth/login/?next=/auth/password_change/done/'},
+                'redirect_url': '/auth/login/?next=/auth/password_change/done/'
+            },
         }
         # Ключи: страницы, доступные для неавторизованных пользователей
         # Значения: шаблоны к страницам
