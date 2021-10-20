@@ -244,7 +244,8 @@ class CorrectPostsCreationViewsTest(TestCase):
                 'to_add': (
                     reverse('posts:profile',
                             kwargs={'username':
-                                    CorrectPostsCreationViewsTest.author_user.username}
+                                    (CorrectPostsCreationViewsTest.
+                                     author_user.username)}
                             ),
                     reverse('posts:group_list',
                             kwargs={
@@ -259,7 +260,8 @@ class CorrectPostsCreationViewsTest(TestCase):
                 'to_add': (
                     reverse('posts:profile',
                             kwargs={'username':
-                                    CorrectPostsCreationViewsTest.author_user.username}
+                                    (CorrectPostsCreationViewsTest.
+                                     author_user.username)}
                             ),
                     reverse('posts:group_list', kwargs={
                             'slug':
@@ -273,7 +275,8 @@ class CorrectPostsCreationViewsTest(TestCase):
                 'to_add': (
                     reverse('posts:profile',
                             kwargs={'username':
-                                    CorrectPostsCreationViewsTest.other_user.username}
+                                    (CorrectPostsCreationViewsTest.
+                                     other_user.username)}
                             ),
                     reverse('posts:group_list',
                             kwargs={'slug':
@@ -287,10 +290,12 @@ class CorrectPostsCreationViewsTest(TestCase):
                 'to_add': (
                     reverse('posts:profile',
                             kwargs={'username':
-                                    CorrectPostsCreationViewsTest.other_user.username}),
+                                    (CorrectPostsCreationViewsTest.
+                                     other_user.username)}),
                     reverse('posts:group_list',
                             kwargs={'slug':
-                                    CorrectPostsCreationViewsTest.other_group.slug})
+                                    (CorrectPostsCreationViewsTest.
+                                     other_group.slug)})
                 ),
             }
         }
@@ -326,7 +331,8 @@ class CorrectPostsCreationViewsTest(TestCase):
             self.page_post_amount[
                 reverse('posts:profile',
                         kwargs={'username':
-                                CorrectPostsCreationViewsTest.author_user.username})]
+                                (CorrectPostsCreationViewsTest.
+                                 author_user.username)})]
         )
         # Проверка количества постов нового автора в базе
         self.assertEqual(Post.objects.filter(
@@ -334,7 +340,8 @@ class CorrectPostsCreationViewsTest(TestCase):
             self.page_post_amount[
                 reverse('posts:profile',
                         kwargs={'username':
-                                CorrectPostsCreationViewsTest.other_user.username})]
+                                (CorrectPostsCreationViewsTest.
+                                 other_user.username)})]
         )
         # Проверка изменения количества постов группы в базе
         self.assertEqual(Post.objects.filter(
@@ -350,7 +357,8 @@ class CorrectPostsCreationViewsTest(TestCase):
             self.page_post_amount[
                 reverse('posts:group_list',
                         kwargs={'slug':
-                                CorrectPostsCreationViewsTest.other_group.slug})]
+                                (CorrectPostsCreationViewsTest.
+                                 other_group.slug)})]
         )
 
     # Не уверен, что этот тест не является дублирубщим предыдущий
@@ -430,7 +438,8 @@ class CorrectPostsCreationViewsTest(TestCase):
         page_data = self.guest_client.get(
             reverse('posts:profile',
                     kwargs={'username':
-                            CorrectPostsCreationViewsTest.author_user.username}))
+                            (CorrectPostsCreationViewsTest.
+                             author_user.username)}))
         self.assertEqual(
             page_data.context.get('page_obj')[0].text,
             self.new_posts_data['main_author_other_group_post']['text'])
@@ -469,7 +478,8 @@ class ContextViewsTest(TestCase):
             reverse('posts:group_list', kwargs={'slug':
                                                 ContextViewsTest.group.slug}),
             reverse('posts:profile', kwargs={'username':
-                                             ContextViewsTest.author_user.username}),
+                                             (ContextViewsTest.
+                                              author_user.username)}),
         ]
         self.pages_with_form = [
             reverse('posts:post_create'),
