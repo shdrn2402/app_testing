@@ -39,7 +39,7 @@ class FormsTest(TestCase):
             data=context,
             follow=True
         )
-        latest_post = Post.objects.order_by('-id')[0]
+        latest_post = Post.objects.order_by('-id').first()
         self.assertRedirects(response, reverse(
             'posts:profile', kwargs={'username': FormsTest.author_user}))
         self.assertEqual(Post.objects.count(), posts_amount + 1)
@@ -57,7 +57,7 @@ class FormsTest(TestCase):
             data=context,
             follow=True
         )
-        latest_post = Post.objects.order_by('-id')[0]
+        latest_post = Post.objects.order_by('-id').first()
         self.assertRedirects(response, reverse(
             'posts:profile', kwargs={'username': FormsTest.author_user}))
         self.assertEqual(Post.objects.count(), posts_amount + 1)

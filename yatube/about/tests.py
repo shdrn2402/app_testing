@@ -1,11 +1,12 @@
 from django.test import Client, TestCase
+from django.urls import reverse
 
 
 class AboutURLTests(TestCase):
     def setUp(self):
         self.guest_client = Client()
-        self.static_pages = {'/about/author/': 'about/author.html',
-                             '/about/tech/': 'about/tech.html',
+        self.static_pages = {reverse('about:author'): 'about/author.html',
+                             reverse('about:tech'): 'about/tech.html',
                              }
 
     def test_pages_available_to_unauthorized_users(self):

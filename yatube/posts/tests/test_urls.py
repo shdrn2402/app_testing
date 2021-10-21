@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from django.urls import reverse
 from posts.models import Group, Post
 
 User = get_user_model()
@@ -31,21 +32,29 @@ class PostURLTests(TestCase):
         # Ключи: страницы, доступные только для авторизованных пользователей
         # Значения: адреса редиректа и шаблоны к страницам
         self.available_to_authorized_users = {
-            '/create/': {
+            reverse('posts:post_create'): {
                 'template': 'posts/create_post.html',
                 'redirect_url': '/auth/login/?next=/create/'
             },
-            '/posts/1/edit/': {
+            reverse('posts:post_edit',
+                    kwargs={'post_id': PostURLTests.post.pk}): {
                 'template': 'posts/create_post.html',
                 'redirect_url': '/auth/login/?next=/posts/1/edit/'},
         }
         # Ключи: страницы, доступные для неавторизованных пользователей
         # Значения: шаблоны к страницам
         self.available_to_unauthorized_users = {
-            '/': 'posts/index.html',
-            '/posts/1/': 'posts/post_detail.html',
-            '/group/test_slug/': 'posts/group_list.html',
-            '/profile/author_user/': 'posts/profile.html',
+            reverse('posts:index'): 'posts/index.html',
+            reverse('posts:post_detail',
+                    kwargs={'post_id': PostURLTests.post.pk}):
+            'posts/post_detail.html',
+            reverse('posts:group_list',
+                    kwargs={'slug': PostURLTests.group.slug}):
+            'posts/group_list.html',
+            reverse('posts:profile',
+                    kwargs={'username':
+                            PostURLTests.author_user.username}):
+            'posts/profile.html',
         }
 
     def test_non_existent_page(self):

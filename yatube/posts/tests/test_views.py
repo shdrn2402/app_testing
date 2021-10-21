@@ -69,12 +69,12 @@ class PaginatorViewsTest(TestCase):
         cls.desired_posts_amount = 13
         cls.test_group_posts_amount = cls.desired_posts_amount
         cls.author_posts_amount = cls.desired_posts_amount
-        for i in range(cls.desired_posts_amount):
-            Post.objects.create(
-                text='Текст ' + str(i + 1),
-                author=cls.author_user,
-                group=cls.group,
-            )
+        # Отличная штука, спасибо за наводку))
+        post_objects = (Post(text='Текст %s' % i,
+                             author=cls.author_user,
+                             group=cls.group
+                             ) for i in range(cls.desired_posts_amount))
+        Post.objects.bulk_create(post_objects)
 
     def setUp(self):
         # Создаём неавторизованный клиент
@@ -306,7 +306,7 @@ class CorrectPostsCreationViewsTest(TestCase):
                             author=author,
                             group=group
                             )
-        return 0
+        # Про return 0 это видимо какие-то обрывки воспоминаний из Си
 
     def test_created_post_goes_to_database(self):
         '''После создания посты попадают в базу данных.'''
@@ -393,9 +393,10 @@ class CorrectPostsCreationViewsTest(TestCase):
         '''После создания посты попадают на первую позицию
         на своей странице.'''
         # Добавление поста существующего автора в существующую группу
-        text = self.new_posts_data['main_author_group_post']['text']
-        author = self.new_posts_data['main_author_group_post']['author']
-        group = self.new_posts_data['main_author_group_post']['group']
+        author_group_post_data = self.new_posts_data['main_author_group_post']
+        text = author_group_post_data['text']
+        author = author_group_post_data['author']
+        group = author_group_post_data['group']
         self.add_posts(text, author, group)
         # Теперь этот пост должен быть первым на главной странице,
         # на странице группы и на странице автора
@@ -403,55 +404,55 @@ class CorrectPostsCreationViewsTest(TestCase):
         for page in pages_to_check:
             with self.subTest(page=page):
                 page_data = self.guest_client.get(page)
+                first_post_on_page = page_data.context.get('page_obj')[0]
                 self.assertEqual(
-                    page_data.context.get('page_obj')[0].text,
-                    self.new_posts_data['main_author_group_post']['text'])
+                    first_post_on_page.text,
+                    author_group_post_data['text'])
                 self.assertEqual(
-                    page_data.context.get('page_obj')[0].author.username,
-                    self.new_posts_data['main_author_group_post'
-                                        ]['author'].username)
+                    first_post_on_page.author.username,
+                    author_group_post_data['author'].username)
                 self.assertEqual(
-                    page_data.context.get('page_obj')[0].group.title,
-                    self.new_posts_data['main_author_group_post'
-                                        ]['group'].title)
+                    first_post_on_page.group.title,
+                    author_group_post_data['group'].title)
         # Добавление поста существующего автора с новой группой
         # оставит первым постом на странице старой группы вышедобавленный пост
-        text = self.new_posts_data['main_author_other_group_post']['text']
-        author = self.new_posts_data['main_author_other_group_post']['author']
-        group = self.new_posts_data['main_author_other_group_post']['group']
+        author_other_group_post_data = self.new_posts_data[
+            'main_author_other_group_post']
+        text = author_other_group_post_data['text']
+        author = author_other_group_post_data['author']
+        group = author_other_group_post_data['group']
         self.add_posts(text, author, group)
-        # на главной странице первый пост поменялся
-        page_data = self.guest_client.get(reverse('posts:index'))
-        self.assertEqual(
-            page_data.context.get('page_obj')[0].text,
-            self.new_posts_data['main_author_other_group_post']['text'])
-        # на странице группы первым остался пост добавленный ранее
+
+        # Проверим, что на главной странице первый пост поменялся
+        # на странице группы первым остался пост добавленный ранее и
         # соответствует значению 'main_author_group_post' словаря
-        page_data = self.guest_client.get(
+        # на странице пользователя первым стал последний добавленный пост
+        # на странице новой группы первым и единственным стал
+        # последний добавленный пост
+        page_changes_to_check = {
+            reverse('posts:index'): author_other_group_post_data['text'],
             reverse('posts:group_list',
                     kwargs={'slug':
-                            CorrectPostsCreationViewsTest.group.slug}))
-        self.assertEqual(
-            page_data.context.get('page_obj')[0].text,
-            self.new_posts_data['main_author_group_post']['text'])
-        # на странице пользователя первым стал последний добавленный пост
-        page_data = self.guest_client.get(
+                            (CorrectPostsCreationViewsTest.
+                             group.slug)}
+                    ): author_group_post_data['text'],
             reverse('posts:profile',
                     kwargs={'username':
                             (CorrectPostsCreationViewsTest.
-                             author_user.username)}))
-        self.assertEqual(
-            page_data.context.get('page_obj')[0].text,
-            self.new_posts_data['main_author_other_group_post']['text'])
-        # на странице новой группы первым и единственным стал
-        # последний добавленный пост
-        page_data = self.guest_client.get(
+                             author_user.username)}
+                    ): author_other_group_post_data['text'],
             reverse('posts:group_list',
                     kwargs={'slug':
-                            CorrectPostsCreationViewsTest.other_group.slug}))
-        self.assertEqual(
-            page_data.context.get('page_obj')[0].text,
-            self.new_posts_data['main_author_other_group_post']['text'])
+                            (CorrectPostsCreationViewsTest.
+                             other_group.slug)}
+                    ): author_other_group_post_data['text'],
+        }
+
+        for page, data in page_changes_to_check.items():
+            with self.subTest(page=page):
+                page_data = self.guest_client.get(page)
+                first_post_on_page = page_data.context.get('page_obj')[0]
+                self.assertEqual(first_post_on_page.text, data)
         self.assertEqual(len(page_data.context.get('page_obj')), 1)
 
 
@@ -498,24 +499,22 @@ class ContextViewsTest(TestCase):
         for page in self.pages_with_paginator:
             with self.subTest():
                 response = self.author_client.get(page)
+                first_object_on_page = response.context.get(
+                    'page_obj').object_list[0]
                 self.assertEqual(
-                    response.context.get('page_obj').object_list[0].text,
+                    first_object_on_page.text,
                     ContextViewsTest.post.text)
                 self.assertEqual(
-                    response.context.get(
-                        'page_obj').object_list[0].author.username,
+                    first_object_on_page.author.username,
                     ContextViewsTest.author_user.username)
                 self.assertEqual(
-                    response.context.get(
-                        'page_obj').object_list[0].group.title,
+                    first_object_on_page.group.title,
                     ContextViewsTest.group.title)
                 self.assertEqual(
-                    response.context.get(
-                        'page_obj').object_list[0].group.slug,
+                    first_object_on_page.group.slug,
                     ContextViewsTest.group.slug)
                 self.assertEqual(
-                    response.context.get(
-                        'page_obj').object_list[0].group.description,
+                    first_object_on_page.group.description,
                     ContextViewsTest.group.description)
 
     def test_pages_without_form_show_correct_context(self):
@@ -523,20 +522,21 @@ class ContextViewsTest(TestCase):
         for page in self.pages_without_form:
             with self.subTest():
                 response = self.author_client.get(page)
+                post_data = response.context.get('post')
                 self.assertEqual(
-                    response.context.get('post').text,
+                    post_data.text,
                     ContextViewsTest.post.text)
                 self.assertEqual(
-                    response.context.get('post').author.username,
+                    post_data.author.username,
                     ContextViewsTest.author_user.username)
                 self.assertEqual(
-                    response.context.get('post').group.title,
+                    post_data.group.title,
                     ContextViewsTest.group.title)
                 self.assertEqual(
-                    response.context.get('post').group.slug,
+                    post_data.group.slug,
                     ContextViewsTest.group.slug)
                 self.assertEqual(
-                    response.context.get('post').group.description,
+                    post_data.group.description,
                     ContextViewsTest.group.description)
 
     def test_pages_with_form_show_correct_context(self):
